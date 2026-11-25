@@ -56,6 +56,11 @@
       <div class="骨">当前栏号与质控阈值。</div>
     </header>
 
+    <section class="卷">
+      <h2>强制结闸策略</h2>
+      <div id="强制结闸"></div>
+      <p class="说明 上距8">写闸形态必须显式选定：无闸/野闸回刷返回 400。水位（在栏笔数）≥ 栏规“结栏水位阈”才放行正式结；未过阈只能强制结，结栏批次钉指纹并只写只读归档凭证，正式汇总不增行。结栏与灌入同锁同事务，杜绝半栏双写。</p>
+    </section>
     <section class="卷"><h2>栏规原文</h2><pre class="回执" id="规">加载中…</pre><div class="工具 上距12">
         <button class="按钮" id="保存栏规">保存栏规补丁</button>
         <button class="按钮 次" id="刷新栏规">刷新</button>
@@ -75,6 +80,7 @@
       document.getElementById("规").textContent = JSON.stringify(await 探栏.getJSON("/api/栏规"), null, 2);
       const s = await 探栏.getJSON("/api/空桩");
       document.getElementById("空桩").textContent = "空桩 " + s.条数 + "：" + (s.空桩 || []).join(" · ");
+      await 探栏.渲染强制结闸(document.getElementById("强制结闸"));
     })();
     </script>
 

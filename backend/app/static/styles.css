@@ -87,6 +87,11 @@ th { background: #121c28; color: var(--muted); position: sticky; top: 0; }
 .徽章.警 { background: rgba(208,137,74,0.18); color: var(--copper); }
 .徽章.危 { background: rgba(209,107,107,0.16); color: var(--danger); }
 .徽章.好 { background: rgba(108,188,138,0.14); color: var(--ok); }
+.徽章.影 { background: rgba(158,170,255,0.16); color: #9eaaff; }
+.按钮.影钮 { background: rgba(158,170,255,0.16); color: #9eaaff; border: 1px solid rgba(158,170,255,0.45); }
+.按钮:disabled { opacity: 0.35; cursor: not-allowed; }
+.闸卡 { border: 1px solid rgba(158,170,255,0.35); border-radius: 12px; padding: 14px; background: rgba(158,170,255,0.05); }
+.闸头 { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .回执 {
   margin: 0; padding: 12px; background: #0a1018; color: #d7e0ea;
   border-radius: 10px; font-size: 12px; overflow: auto; max-height: 260px; white-space: pre-wrap;

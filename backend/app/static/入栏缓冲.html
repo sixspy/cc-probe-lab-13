@@ -20,10 +20,16 @@
     </header>
 
     <section class="卷">
+      <h2>强制结闸</h2>
+      <div id="强制结闸"></div>
+    </section>
+    <section class="卷">
+      <h2>缓冲明细</h2>
       <div class="表绕"><table><thead><tr><th>报文编号</th><th>站点</th><th>指标</th><th>读数</th><th>栏号</th><th>命运</th></tr></thead><tbody id="表"></tbody></table></div>
     </section>
     <script>
     (async () => {
+      await 探栏.渲染强制结闸(document.getElementById("强制结闸"));
       const rows = await 探栏.getJSON("/api/入栏缓冲");
       const tb = document.getElementById("表");
       if (!rows.length) { tb.innerHTML = `<tr><td colspan="6">${探栏.空态("缓冲为空。")}</td></tr>`; return; }

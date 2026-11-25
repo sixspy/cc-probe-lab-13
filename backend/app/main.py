@@ -2,6 +2,7 @@ from pathlib import Path
 from quart import Quart, jsonify, request, send_from_directory, redirect
 from app import seed
 from app.services import 目录, 装载, 结栏, 贯验, 夹具, 统计, 说明
+from app.services.写闸 import 闸形态集, 校验闸形态
 
 _STATIC = Path(__file__).resolve().parent / "static"
 app = Quart(__name__)
@@ -94,11 +95,29 @@ async def api_夹具装载(name: str):
 
 @app.post("/api/结栏/跑")
 async def api_结栏():
-    return jsonify(结栏.结当前栏())
+    body = await request.get_json(force=True, silent=True) or {}
+    闸 = body.get("闸形态")
+    try:
+        校验闸形态(闸)
+        return jsonify(结栏.结当前栏(闸))
+    except ValueError as e:
+        return jsonify({"错误": str(e), "合法闸形态": list(闸形态集)}), 400
 
 
 @app.get("/api/结栏/预览")
 async def api_结栏预览():
+    return jsonify(结栏.预览结栏())
+
+
+@app.get("/api/强制结栏/凭证")
+async def api_强制结凭证():
+    """新增强制结栏只读接口：未过阈强制结的归档凭证（影子轨）。"""
+    return jsonify(目录.强制结凭证列表())
+
+
+@app.get("/api/强制结栏/闸态")
+async def api_强制结闸态():
+    """只读：当前栏水位/阈值/封印/可选闸形态，供页面渲染强制结闸。"""
     return jsonify(结栏.预览结栏())
 
 
@@ -157,6 +176,16 @@ async def api_装载摘要():
 @app.get("/api/统计/结栏摘要")
 async def api_结栏摘要():
     return jsonify(统计.结栏批次摘要())
+
+
+@app.get("/api/统计/强制结凭证摘要")
+async def api_强制结凭证摘要():
+    return jsonify(统计.强制结凭证摘要())
+
+
+@app.get("/api/栏封印")
+async def api_栏封印():
+    return jsonify(目录.栏封印列表())
 
 @app.get("/api/空桩")
 async def api_空桩():

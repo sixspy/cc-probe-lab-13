@@ -76,7 +76,34 @@ CREATE TABLE IF NOT EXISTS 结栏批次 (
   汇总数 INTEGER NOT NULL DEFAULT 0,
   报告 TEXT NOT NULL DEFAULT '{}'
 );
+CREATE TABLE IF NOT EXISTS 栏封印 (
+  栏号 TEXT PRIMARY KEY,
+  时刻 TEXT NOT NULL,
+  闸形态 TEXT NOT NULL,
+  水位 INTEGER NOT NULL DEFAULT 0,
+  指纹 TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS 强制结凭证 (
+  凭证编号 TEXT PRIMARY KEY,
+  结栏批次编号 TEXT NOT NULL,
+  栏号 TEXT NOT NULL,
+  时刻 TEXT NOT NULL,
+  报文数 INTEGER NOT NULL,
+  水位 INTEGER NOT NULL,
+  阈值 INTEGER NOT NULL,
+  报文集合 TEXT NOT NULL,
+  指纹 TEXT NOT NULL
+);
 """
+
+
+def _迁移(conn) -> None:
+    """旧库补列/补默认栏规。"""
+    列 = {r["name"] for r in conn.execute("PRAGMA table_info(结栏批次)").fetchall()}
+    if "闸形态" not in 列:
+        conn.execute("ALTER TABLE 结栏批次 ADD COLUMN 闸形态 TEXT NOT NULL DEFAULT ''")
+    if "影子" not in 列:
+        conn.execute("ALTER TABLE 结栏批次 ADD COLUMN 影子 INTEGER NOT NULL DEFAULT 0")
 
 
 def 此刻() -> str:
@@ -86,15 +113,21 @@ def 此刻() -> str:
 def 初始化库() -> None:
     conn = 连接()
     conn.executescript(建表)
+    _迁移(conn)
     if conn.execute("SELECT COUNT(*) AS c FROM 栏规").fetchone()["c"] == 0:
         for k, v in {
             "当前栏号": "B-demo",
             "PM25上限": "75",
             "PM25下限": "0",
             "标定偏移上限": "5",
+            "结栏水位阈": "3",
             "栏策略": "按站点指标汇总均值",
         }.items():
             conn.execute("INSERT INTO 栏规(键,值) VALUES (?,?)", (k, v))
+    else:
+        旧 = {r["键"] for r in conn.execute("SELECT 键 FROM 栏规").fetchall()}
+        if "结栏水位阈" not in 旧:
+            conn.execute("INSERT INTO 栏规(键,值) VALUES (?,?)", ("结栏水位阈", "3"))
     if conn.execute("SELECT COUNT(*) AS c FROM 站点源").fetchone()["c"] == 0:
         for row in [
             ("站-河东", "河东大气站", "大气", "城区", "示范站"),

@@ -34,10 +34,15 @@
       <div class="工具">
         <button class="按钮" id="灌入栏">灌入栏成汇总样例</button>
         <button class="按钮 次" id="灌坏点">灌坏点样例</button>
-        <button class="按钮 青" id="结栏">结当前栏</button>
+        <button class="按钮 次" id="灌未过阈">灌未过阈样例</button>
+        <button class="按钮 青" id="结栏">结当前栏（旧无闸入口，已停用）</button>
         <button class="按钮 次" id="贯验">跑栏贯验</button>
       </div>
       <pre class="回执" id="回执">操作回执会显示在这里</pre>
+    </section>
+    <section class="卷">
+      <h2>强制结闸</h2>
+      <div id="强制结闸"></div>
     </section>
     <section class="卷">
       <h2>最近装载批次</h2>
@@ -59,9 +64,10 @@
       const loads = await 探栏.getJSON("/api/装载批次");
       探栏.渲染批次表(document.getElementById("装载批次表"), loads, ["编号","时刻","入流","入栏","坏点"]);
       const closes = await 探栏.getJSON("/api/结栏批次");
-      探栏.渲染批次表(document.getElementById("结栏批次表"), closes, ["编号","栏号","时刻","汇总数"]);
+      探栏.渲染批次表(document.getElementById("结栏批次表"), closes, ["编号","栏号","时刻","汇总数","闸形态","影子"]);
       const info = await 探栏.getJSON("/api/仓情");
       探栏.填命运字典(document.getElementById("命运词典"), info["命运词典"] || {});
+      await 探栏.渲染强制结闸(document.getElementById("强制结闸"));
     }
     async function 跑(fn) {
       const el = document.getElementById("回执");
@@ -70,7 +76,9 @@
     }
     document.getElementById("灌入栏").onclick = () => 跑(() => 探栏.postJSON("/api/观测报文/夹具/入栏成汇总样例"));
     document.getElementById("灌坏点").onclick = () => 跑(() => 探栏.postJSON("/api/观测报文/夹具/坏点样例"));
-    document.getElementById("结栏").onclick = () => 跑(() => 探栏.postJSON("/api/结栏/跑"));
+    document.getElementById("灌未过阈").onclick = () => 跑(() => 探栏.postJSON("/api/观测报文/夹具/未过阈样例"));
+    document.getElementById("结栏").disabled = true;
+    document.getElementById("结栏").title = "无闸入口已停用，请在下方强制结闸选定写闸形态";
     document.getElementById("贯验").onclick = () => 跑(() => 探栏.postJSON("/api/栏贯验/跑"));
     刷新();
     </script>

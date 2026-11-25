@@ -112,6 +112,11 @@ def 概览() -> dict:
             "在栏": conn.execute("SELECT COUNT(*) AS c FROM 入栏缓冲 WHERE 命运='在栏'").fetchone()["c"],
             "站点汇总": conn.execute("SELECT COUNT(*) AS c FROM 站点汇总账").fetchone()["c"],
             "坏点": conn.execute("SELECT COUNT(*) AS c FROM 坏点匣").fetchone()["c"],
+            "影子结栏": conn.execute(
+                "SELECT COUNT(*) AS c FROM 入栏缓冲 WHERE 命运='影子结栏'"
+            ).fetchone()["c"],
+            "强制结凭证": conn.execute("SELECT COUNT(*) AS c FROM 强制结凭证").fetchone()["c"],
+            "封印栏数": conn.execute("SELECT COUNT(*) AS c FROM 栏封印").fetchone()["c"],
             "栏规": 栏规(),
         }
     finally:
@@ -138,10 +143,33 @@ def 结栏批次列表(限制: int = 50) -> list[dict]:
         return [
             dict(r)
             for r in conn.execute(
-                "SELECT 编号,栏号,时刻,汇总数 FROM 结栏批次 ORDER BY 时刻 DESC LIMIT ?",
+                "SELECT 编号,栏号,时刻,汇总数,闸形态,影子 FROM 结栏批次 ORDER BY 时刻 DESC LIMIT ?",
                 (限制,),
             ).fetchall()
         ]
+    finally:
+        conn.close()
+
+
+def 强制结凭证列表(限制: int = 50) -> list[dict]:
+    """只读归档凭证：未过阈强制结的影子轨，不与正式汇总账混读。"""
+    conn = 连接()
+    try:
+        return [
+            dict(r)
+            for r in conn.execute(
+                "SELECT * FROM 强制结凭证 ORDER BY 时刻 DESC LIMIT ?",
+                (限制,),
+            ).fetchall()
+        ]
+    finally:
+        conn.close()
+
+
+def 栏封印列表() -> list[dict]:
+    conn = 连接()
+    try:
+        return [dict(r) for r in conn.execute("SELECT * FROM 栏封印 ORDER BY 时刻").fetchall()]
     finally:
         conn.close()
 

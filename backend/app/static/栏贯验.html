@@ -20,16 +20,25 @@
     </header>
 
     <section class="卷">
+      <h2>强制结闸</h2>
+      <div id="强制结闸"></div>
+    </section>
+    <section class="卷">
+      <h2>双轨对账快照</h2>
+      <pre class="回执" id="快照">加载中…</pre>
       <div class="工具"><button class="按钮" id="跑">跑栏贯验</button> <span id="果"></span></div>
-      <div class="表绕"><table><thead><tr><th>时刻</th><th>在栏</th><th>汇总报文</th><th>坏点</th><th>结果</th><th>说明</th></tr></thead><tbody id="表"></tbody></table></div>
+      <div class="表绕"><table><thead><tr><th>时刻</th><th>在栏</th><th>汇总报文</th><th>影子报文</th><th>坏点</th><th>结果</th><th>说明</th></tr></thead><tbody id="表"></tbody></table></div>
     </section>
     <script>
     async function 刷() {
+      await 探栏.渲染强制结闸(document.getElementById("强制结闸"));
+      const snap = await 探栏.getJSON("/api/栏贯验/快照");
+      document.getElementById("快照").textContent = JSON.stringify(snap, null, 2);
       const rows = await 探栏.getJSON("/api/栏贯验");
       const tb = document.getElementById("表"); tb.innerHTML = "";
       for (const r of rows) {
         const ok = r.是否对齐 ? 探栏.徽章("对齐","好") : 探栏.徽章("撕裂","危");
-        tb.appendChild(探栏.行(`<td>${探栏.安全文本(r.时刻)}</td><td>${r.在栏笔数}</td><td>${r.汇总报文数}</td><td>${r.坏点笔数}</td><td>${ok}</td><td>${探栏.安全文本(r.说明)}</td>`));
+        tb.appendChild(探栏.行(`<td>${探栏.安全文本(r.时刻)}</td><td>${r.在栏笔数}</td><td>${r.汇总报文数}</td><td>${snap["影子报文数"] ?? 0}</td><td>${r.坏点笔数}</td><td>${ok}</td><td>${探栏.安全文本(r.说明)}</td>`));
       }
     }
     document.getElementById("跑").onclick = async () => {

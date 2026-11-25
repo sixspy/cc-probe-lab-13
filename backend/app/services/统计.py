@@ -51,7 +51,21 @@ def 结栏批次摘要(限制: int = 20) -> list[dict]:
     conn = 连接()
     try:
         rows = conn.execute(
-            "SELECT 编号,栏号,时刻,汇总数 FROM 结栏批次 ORDER BY 时刻 DESC LIMIT ?",
+            "SELECT 编号,栏号,时刻,汇总数,闸形态,影子 FROM 结栏批次 ORDER BY 时刻 DESC LIMIT ?",
+            (限制,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def 强制结凭证摘要(限制: int = 20) -> list[dict]:
+    """影子轨只读摘要：与正式汇总账读引用不同，绝不抬升正式统计。"""
+    conn = 连接()
+    try:
+        rows = conn.execute(
+            """SELECT 凭证编号,结栏批次编号,栏号,时刻,报文数,水位,阈值,指纹
+               FROM 强制结凭证 ORDER BY 时刻 DESC LIMIT ?""",
             (限制,),
         ).fetchall()
         return [dict(r) for r in rows]
